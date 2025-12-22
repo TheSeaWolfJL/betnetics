@@ -1,0 +1,26 @@
+@import "tailwindcss";
+
+@theme {
+    --color-bg-main: #e6f1fe;
+    --color-bg-main: #e6f1fe;
+    --color-primary: #006fee;
+    --text-subtext: #3F3F46;
+    --text-label: #52525B;
+    --input-border: #E4E4E7;
+    --input-border: #E4E4E7;
+    --color-primary-dark: #11181c;
+    --color-primary-dark-light: #3F3F46;
+    --color-primary-dark-light-easy: #52525B;
+    --tracking-tight: -0.0018em;
+}
+
+.bg-default-100 {
+    background-color: #fff;
+}
+
+.text-foreground-500 {
+    color: #52525B;
+    letter-spacing: -1px;
+}
+
+@config "../tailwind.config.js"
