@@ -7,6 +7,7 @@ import { Providers } from "./providers";
 import { fontSans } from "@/config/fonts";
 import { siteConfig } from "@/config/site";
 import { DehydratedState } from '@tanstack/react-query';
+import BaseRootLayout from "@/shared/layouts/baseLayout";
 
 export const metadata: Metadata = {
   title: {
@@ -20,7 +21,7 @@ export const metadata: Metadata = {
 };
 
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
   dehydratedState
 }: {
@@ -37,9 +38,9 @@ export default function RootLayout({
         )}
       >
         <Providers dehydratedState={dehydratedState}>
-          <div className="flex w-full justify-center items-center bg-bg-main h-screen">
+          <BaseRootLayout>
             {children}
-          </div>
+          </BaseRootLayout>
         </Providers>
       </body>
     </html>
