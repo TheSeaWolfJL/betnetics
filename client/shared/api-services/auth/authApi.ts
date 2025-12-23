@@ -1,4 +1,4 @@
-import { SignInFormType, UserProfileResponseType, UserProfileType } from "@/types";
+import { SignInFormType, TokensType, UserProfileType } from "@/types";
 import { instance } from "../baseApi";
 import { useQuery } from "@tanstack/react-query";
 
@@ -12,11 +12,13 @@ const authApi = {
     signInAction(data: SignInFormType) {
         return instance.post<SignInFormType, { data: UserProfileType }>(Auth.login, data);
     },
-    refreshToken() {
-        return instance.post(Auth.refresh);
+    refreshToken(refreshToken: string) {
+        return instance.post<{ refreshToken: string }, { data: TokensType }>(Auth.refresh, { refreshToken });
     },
-    me() {
-        return instance.get<UserProfileResponseType>(Auth.me);
+    me(accessToken: string) {
+        return instance.get<UserProfileType>(Auth.me, {
+            headers: { 'Authorization': `Bearer ${accessToken}` },
+        });
     },
     // updateMe(data: FormData) {
     //     return instance.patch(`${base + '/me'}`, data, {
@@ -28,11 +30,11 @@ const authApi = {
     // },
 };
 
-const useGetAuth = () => {
+const useGetAuth = (accessToken: string) => {
     return useQuery({
         queryKey: ['auth'],
         queryFn: async () =>
-            await authApi.me().then((res) => {
+            await authApi.me(accessToken).then((res) => {
                 return res.data;
             }),
     });

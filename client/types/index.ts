@@ -46,4 +46,7 @@ export type SignInFormType = {
   password: string
 }
 
-export type UserProfileResponseType = Omit<UserProfileType, 'accessToken' | 'refreshToken'>
+export type TokensType = {
+  accessToken: string
+  refreshToken: string
+}
