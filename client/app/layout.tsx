@@ -1,13 +1,13 @@
-import clsx from "clsx";
-import "@/styles/globals.css";
-import { Metadata } from "next";
-
-import { Providers } from "./providers";
-
-import { fontSans } from "@/config/fonts";
-import { siteConfig } from "@/config/site";
+import clsx from 'clsx';
+import '@/styles/globals.css';
+import { Metadata } from 'next';
 import { DehydratedState } from '@tanstack/react-query';
-import BaseRootLayout from "@/shared/layouts/baseLayout";
+
+import { Providers } from './providers';
+
+import { fontSans } from '@/config/fonts';
+import { siteConfig } from '@/config/site';
+import BaseRootLayout from '@/shared/layouts/baseLayout';
 
 export const metadata: Metadata = {
   title: {
@@ -16,14 +16,13 @@ export const metadata: Metadata = {
   },
   description: siteConfig.description,
   icons: {
-    icon: "/favicon.ico",
+    icon: '/favicon.ico',
   },
 };
 
-
 export default async function RootLayout({
   children,
-  dehydratedState
+  dehydratedState,
 }: {
   children: React.ReactNode;
   dehydratedState: DehydratedState;
@@ -31,16 +30,9 @@ export default async function RootLayout({
   return (
     <html suppressHydrationWarning lang="en">
       <head />
-      <body
-        className={clsx(
-          "min-h-screen",
-          fontSans.className,
-        )}
-      >
+      <body className={clsx('min-h-screen', fontSans.className)}>
         <Providers dehydratedState={dehydratedState}>
-          <BaseRootLayout>
-            {children}
-          </BaseRootLayout>
+          <BaseRootLayout>{children}</BaseRootLayout>
         </Providers>
       </body>
     </html>

@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import {
   DehydratedState,
@@ -6,10 +6,9 @@ import {
   QueryClient,
   QueryClientProvider,
 } from '@tanstack/react-query';
-
-import * as React from "react";
-import { HeroUIProvider } from "@heroui/system";
-import { useRouter } from "next/navigation";
+import * as React from 'react';
+import { HeroUIProvider } from '@heroui/system';
+import { useRouter } from 'next/navigation';
 import { ToastProvider } from '@heroui/react';
 
 export interface ProvidersProps {
@@ -17,10 +16,10 @@ export interface ProvidersProps {
   dehydratedState: DehydratedState;
 }
 
-declare module "@react-types/shared" {
+declare module '@react-types/shared' {
   interface RouterConfig {
     routerOptions: NonNullable<
-      Parameters<ReturnType<typeof useRouter>["push"]>[1]
+      Parameters<ReturnType<typeof useRouter>['push']>[1]
     >;
   }
 }

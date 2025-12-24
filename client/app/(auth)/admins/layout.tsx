@@ -1,4 +1,11 @@
-export default function BlogLayout({
+import { Metadata } from 'next/types';
+
+export const metadata: Metadata = {
+  title: 'Admins',
+  description: 'админчики',
+};
+
+export default function AdminsLayout({
   children,
 }: {
   children: React.ReactNode;

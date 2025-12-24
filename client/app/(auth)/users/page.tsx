@@ -1,8 +1,13 @@
+import { Metadata } from 'next/types';
 
-export default function DocsPage() {
+export const metadata: Metadata = {
+  title: 'Users',
+  description: 'Пользователи',
+};
+export default function UsersPage() {
   return (
     <div>
-      <h1 className={''}>Docs</h1>
+      <h1 className={''}>Users</h1>
     </div>
   );
 }

@@ -1,13 +1,18 @@
-export default function AboutLayout({
+import { Metadata } from 'next/types';
+
+export const metadata: Metadata = {
+  title: 'Posts',
+  description: 'посты',
+};
+
+export default function PostsLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   return (
-    <section className="flex flex-col items-center justify-center gap-4 py-8 md:py-10">
-      <div className="inline-block max-w-lg text-center justify-center">
-        {children}
-      </div>
+    <section className="flex w-full h-full items-center justify-center">
+      {children}
     </section>
   );
 }

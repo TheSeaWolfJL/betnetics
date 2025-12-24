@@ -1,4 +1,4 @@
-import { SVGProps } from "react";
+import { SVGProps } from 'react';
 
 export type IconSvgProps = SVGProps<SVGSVGElement> & {
   size?: number;
@@ -22,31 +22,31 @@ export type UsersType = {
   weight: number;
   eyeColor: string;
   hair: Hair;
-}
+};
 
 type Hair = {
   color: string;
   type: string;
-}
+};
 
 export type UserProfileType = {
-  id: number
-  username: string
-  email: string
-  firstName: string
-  lastName: string
-  gender: string
-  image: string
-  accessToken: string
-  refreshToken: string
-}
+  id: number;
+  username: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  gender: string;
+  image: string;
+  accessToken: string;
+  refreshToken: string;
+};
 
 export type SignInFormType = {
-  username: string
-  password: string
-}
+  username: string;
+  password: string;
+};
 
 export type TokensType = {
-  accessToken: string
-  refreshToken: string
-}
+  accessToken: string;
+  refreshToken: string;
+};

@@ -1,7 +1,5 @@
-export default function AboutPage() {
+export default function PostsPage() {
   return (
-    <div>
-      <h1 className={''}>Posts</h1>
-    </div>
+    <div className="flex w-full h-full items-center justify-center">pposts</div>
   );
 }
