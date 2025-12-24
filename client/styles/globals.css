@@ -2,15 +2,13 @@
 
 @theme {
     --color-bg-main: #e6f1fe;
-    --color-bg-main: #e6f1fe;
     --color-primary: #006fee;
+    --color-secondary: #cce3fd;
     --text-subtext: #3F3F46;
     --text-label: #52525B;
     --input-border: #E4E4E7;
-    --input-border: #E4E4E7;
+    --navbar-border: #b8d7fb;
     --color-primary-dark: #11181c;
-    --color-primary-dark-light: #3F3F46;
-    --color-primary-dark-light-easy: #52525B;
     --tracking-tight: -0.0018em;
 }
 

@@ -1,18 +1,16 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 
-
-
 export type ProfileStateType = {
   profileId: string;
-//   decks: Array<Deck>;
-//   pagination: PaginationType;
+  //   decks: Array<Deck>;
+  //   pagination: PaginationType;
 };
 
 export type ProfileActions = {
   setProfileId: (id: string) => void;
-//   setDecks: (decks: Array<Deck>) => void;
-//   setPagination: (pagination: PaginationType) => void;
+  //   setDecks: (decks: Array<Deck>) => void;
+  //   setPagination: (pagination: PaginationType) => void;
 };
 
 // export type CounterStore = CounterState & CounterActions;
@@ -28,15 +26,15 @@ export const useProfileStore = create<any>()(
   persist(
     (set, get) => ({
       profile: '',
-    //   posts: [] as Array<Post>,
-    //   pagination: {} as PaginationType,
-    //   // addABear: () => set({ bears: get().bears + 1 }),
-    //   setPosts: (decks: Array<Deck>) => {
-    //     return set({ decks });
-    //   },
-    //   setPagination: (pagination: PaginationType) => {
-    //     return set({ pagination });
-    //   },
+      //   posts: [] as Array<Post>,
+      //   pagination: {} as PaginationType,
+      //   // addABear: () => set({ bears: get().bears + 1 }),
+      //   setPosts: (decks: Array<Deck>) => {
+      //     return set({ decks });
+      //   },
+      //   setPagination: (pagination: PaginationType) => {
+      //     return set({ pagination });
+      //   },
     }),
     {
       name: 'posts-storage', // name of the item in the storage (must be unique)

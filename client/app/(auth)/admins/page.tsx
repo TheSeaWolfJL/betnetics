@@ -1,8 +1,7 @@
-
-export default function BlogPage() {
+export default function AdminPage() {
   return (
     <div>
-      <h1 className={''}>Blog</h1>
+      <h1 className={''}>ADmin</h1>
     </div>
   );
 }

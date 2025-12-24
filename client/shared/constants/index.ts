@@ -1,9 +1,15 @@
-export const signInformFields = [{ 
-  name: 'username', 
-  placeholder: 'admin@example.com', 
-  label: 'Имя пользователя',
-
-}, { name: 'password', placeholder: 'Введите пароль', label: 'Пароль'}];
+export const signInformFields = [
+  {
+    name: 'username',
+    placeholder: 'admin@example.com',
+    label: 'Имя пользователя',
+  },
+  {
+    name: 'password',
+    placeholder: 'Введите пароль',
+    label: 'Пароль',
+  },
+];
 
 export const emailValidationRegex = /^[^|$%&/=?^*+!#~'{}]+$/i;
 export const passwordValidationRegex =

@@ -97,6 +97,7 @@ export default defineConfig([globalIgnores([
         "no-unused-vars": "off",
         "unused-imports/no-unused-vars": "off",
         "unused-imports/no-unused-imports": "warn",
+        "indent": ["error", 2],
 
         "@typescript-eslint/no-unused-vars": ["warn", {
             args: "after-used",
@@ -139,13 +140,13 @@ export default defineConfig([globalIgnores([
             prev: "*",
             next: "return",
         }, {
-            blankLine: "always",
-            prev: ["const", "let", "var"],
-            next: "*",
-        }, {
-            blankLine: "any",
-            prev: ["const", "let", "var"],
-            next: ["const", "let", "var"],
-        }],
+                blankLine: "always",
+                prev: ["const", "let", "var"],
+                next: "*",
+            }, {
+                blankLine: "any",
+                prev: ["const", "let", "var"],
+                next: ["const", "let", "var"],
+            }],
     },
 }]);
