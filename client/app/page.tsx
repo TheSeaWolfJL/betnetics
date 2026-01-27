@@ -13,6 +13,9 @@ import { useAppStore } from '@/store/app-store';
 import { authApi } from '@/shared/api-services/auth/authApi';
 import { signInSchema } from '@/shared/schema/signInSchema';
 import { InputForm } from '@/components/InputForm';
+import notifyServerAfterApi from '@/shared/utils/notifyServerAfterApi';
+import getSocket from '@/shared/socket';
+import { useEffect } from 'react';
 
 const signInformFields = [
   {
@@ -34,12 +37,34 @@ export default function SignIn() {
     mutationFn: (formData: SignInFormType) => authApi.signInAction(formData),
   });
 
+  // Listen for server websocket notifications and show toasts
+  useEffect(() => {
+    const socket = getSocket();
+    if (!socket) return;
+
+    const handleNotification = (payload: any) => {
+      const { status, title, message, description } = payload || {};
+      addToast({
+        title: title || (status === 'error' ? 'Error' : 'Notification'),
+        description: message || description || '',
+        color:
+          status === 'success'
+            ? 'success'
+            : status === 'error'
+              ? 'danger'
+              : 'primary',
+      });
+    };
+
+    socket.on('setNotification', handleNotification);
+    return () => {
+      socket.off('setNotification', handleNotification);
+    };
+  }, []);
+
   const {
-    clearErrors,
     formState: { errors },
-    setError,
     register,
-    reset,
     control,
   } = useForm<SignInFormType>({
     mode: 'onChange',
@@ -57,18 +82,16 @@ export default function SignIn() {
         setCookie('accessToken', res.data.accessToken);
         setCookie('refreshToken', res.data.refreshToken);
         setUser(res.data);
-        addToast({
-          title: 'Login',
-          description: 'Login was successfully',
-          color: 'success',
+        notifyServerAfterApi({
+          type: 'success',
+          message: 'Login was successfully',
         });
         nextRouter.push('/posts');
       },
       onError: (error) => {
-        addToast({
-          title: 'Login error',
-          description: `Попробуйте другие логин \ пароль`,
-          color: 'danger',
+        notifyServerAfterApi({
+          type: 'error',
+          message: 'Попробуйте другие логин \ пароль',
         });
       },
     });

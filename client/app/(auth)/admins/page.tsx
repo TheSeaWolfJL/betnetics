@@ -20,6 +20,9 @@ import { AdminsTable } from '@/components/tables/adminsTable';
 import { PostsHeadComponent } from '@/components/pageHeadComponent';
 import { useGetUsers, usersApi } from '@/shared/api-services/users/usersApi';
 import { useInitializeUrlParams } from '@/shared/hooks/useInitializeUrlParams';
+import notifyServerAfterApi from '@/shared/utils/notifyServerAfterApi';
+import getSocket from '@/shared/socket';
+import { addToast } from '@heroui/react';
 
 type AdminsModalModeType = 'edit' | 'create' | 'delete';
 
@@ -33,19 +36,19 @@ const defaultParams = {
 const adminModalFields = [
   {
     name: 'firstName' as keyof AdminFormType,
-    placeholder: 'Иванов Иван Иванович',
+    placeholder: ' ',
     label: 'ФИО',
   },
   {
     name: 'email' as keyof AdminFormType,
-    placeholder: 'admin@example.com',
+    placeholder: ' ',
     label: 'Email',
     type: 'email',
   },
 
   {
     name: 'birthDate' as keyof AdminFormType,
-    placeholder: '19.09.1990',
+    placeholder: ' ',
     label: 'Дата рождения',
   },
 ];
@@ -73,6 +76,38 @@ export default function AdminPage() {
   const mutation = useMutation({
     mutationFn: (formData: AdminFormType) => usersApi.addUser(formData),
   });
+  const mutationEdit = useMutation({
+    mutationFn: (formData: AdminFormType & { id: number }) =>
+      usersApi.updateUser(formData),
+  });
+  const mutationDelete = useMutation({
+    mutationFn: (id: number) => usersApi.deleteUser(id),
+  });
+
+  // Listen for server websocket notifications and show toasts
+  useEffect(() => {
+    const socket = getSocket();
+    if (!socket) return;
+
+    const handleNotification = (payload: any) => {
+      const { status, title, message, description } = payload || {};
+      addToast({
+        title: title || (status === 'error' ? 'Error' : 'Notification'),
+        description: message || description || '',
+        color:
+          status === 'success'
+            ? 'success'
+            : status === 'error'
+              ? 'danger'
+              : 'primary',
+      });
+    };
+
+    socket.on('setNotification', handleNotification);
+    return () => {
+      socket.off('setNotification', handleNotification);
+    };
+  }, []);
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
   const [action, setAction] = useState<AdminsModalModeType>('create');
   const [userData, setUserData] = useState<GetUserType | undefined>(
@@ -96,7 +131,7 @@ export default function AdminPage() {
     resolver: zodResolver(adminSchema),
   });
 
-  const { data, isFetching, isPending, refetch } = useGetUsers({
+  const { data, refetch } = useGetUsers({
     skip: getUrlLimits(searchParams).skip,
     limit: getUrlLimits(searchParams).limit,
     key: defaultParams.key,
@@ -104,9 +139,7 @@ export default function AdminPage() {
     q: searchParams.get('q') || '',
   });
 
-  useEffect(() => {
-    refetch();
-  }, [searchParams, refetch]);
+  // Removed manual refetch; query handles it automatically
 
   const debouncedSearch = useDebounce((search: string) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -122,13 +155,71 @@ export default function AdminPage() {
       mutation.mutate(payload, {
         onSuccess: (res) => {
           console.log('Admin created successfully', res);
-
+          notifyServerAfterApi({
+            type: 'success',
+            message: 'Admin created successfully',
+          });
+          refetch(); // Refresh the list
+          onOpenChange(); // Close modal
+          reset();
           return true;
         },
         onError: (error) => {
           console.error('Admin creation error', error);
-
+          notifyServerAfterApi({
+            type: 'error',
+            message: 'Failed to create admin',
+          });
           return false;
+        },
+      });
+    }
+    if (action === 'edit') {
+      mutationEdit.mutate(
+        { ...payload, id: userData?.id || 0 },
+        {
+          onSuccess: (res) => {
+            console.log('Admin updated successfully', res);
+            notifyServerAfterApi({
+              type: 'success',
+              message: 'Admin updated successfully',
+            });
+            refetch();
+            onOpenChange();
+            reset();
+            setUserData({} as GetUserType);
+            setAction('create');
+          },
+          onError: (error) => {
+            console.error('Admin update error', error);
+            notifyServerAfterApi({
+              type: 'error',
+              message: 'Failed to update admin',
+            });
+          },
+        }
+      );
+    }
+    if (action === 'delete') {
+      mutationDelete.mutate(userData?.id || 0, {
+        onSuccess: (res) => {
+          console.log('Admin deleted successfully', res);
+          notifyServerAfterApi({
+            type: 'success',
+            message: 'Admin deleted successfully',
+          });
+          refetch();
+          onOpenChange();
+          reset();
+          setUserData({} as GetUserType);
+          setAction('create');
+        },
+        onError: (error) => {
+          console.error('Admin delete error', error);
+          notifyServerAfterApi({
+            type: 'error',
+            message: 'Failed to delete admin',
+          });
         },
       });
     }
@@ -140,18 +231,16 @@ export default function AdminPage() {
     setUserData(admin);
     setAction(actionKey);
     if (admin && actionKey === 'edit') {
+      onOpen();
       setValue('email', admin.email);
       setValue('firstName', admin.firstName);
       setValue('birthDate', formatDate(admin.birthDate));
-      onOpen();
     }
     if (admin && actionKey === 'delete') {
-      setValue('firstName', admin.firstName);
       onOpen();
+      setValue('firstName', admin.firstName);
     }
   };
-  const isLoading = isFetching || isPending;
-
   return (
     <div className="flex pt-[88px] flex-col w-full h-full items-start justify-start sm:px-20 sm:pt-20 gap-3 sm:gap-10 hide-scrollbar">
       <PostsHeadComponent
@@ -169,23 +258,22 @@ export default function AdminPage() {
       <AdminsTable
         columnKeys={adminsHeaderColumns}
         data={data?.data.users || []}
-        isLoading={isLoading}
+        isLoading={false}
         label="Администраторы"
         limit={getUrlLimits(searchParams).limit}
         onAction={onActionHandle}
       />
       <div className="flex sm:hidden flex-col w-full h-full [&>*:first-child]:rounded-t-[20px] [&>*:last-child]:pb-10">
-        {!isLoading &&
-          data?.data.users.map((userInfo, i) => {
-            return (
-              <UserCard
-                key={i}
-                isAdmin
-                item={userInfo}
-                onAction={onActionHandle}
-              />
-            );
-          })}
+        {data?.data.users.map((userInfo, i) => {
+          return (
+            <UserCard
+              key={i}
+              isAdmin
+              item={userInfo}
+              onAction={onActionHandle}
+            />
+          );
+        })}
         {!data?.data.users.length && <>Администраторы не найдены</>}
       </div>
       <UserModal
@@ -210,7 +298,11 @@ export default function AdminPage() {
             firstName: userData?.firstName || '',
           }).join('') === Object.values(getValues()).join('')
         }
-        isLoading={mutation.isPending}
+        isLoading={
+          mutation.isPending ||
+          mutationEdit.isPending ||
+          mutationDelete.isPending
+        }
         isOpen={isOpen}
         processForm={processForm}
         register={register}

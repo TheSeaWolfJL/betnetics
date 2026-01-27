@@ -30,9 +30,11 @@ export const AuthLayoutFooter = (props: {
         selectedKeys={[props.limit]}
         variant={'underlined'}
         onSelectionChange={(keys) => {
+          const newLimit = String(Object.values(keys)[0]);
+          localStorage.setItem('limit', newLimit);
           props.handlePaginationChange({
             type: 'limit',
-            value: String(Object.values(keys)[0]),
+            value: newLimit,
           });
         }}
       >

@@ -7,6 +7,8 @@ import { AdminFormType, GetUsersType, GetUserType, PostsType } from '@/types';
 const enum Users {
   users = 'users/',
   create_user = 'users/add',
+  update_user = 'users/update',
+  delete_user = 'users/delete',
 }
 
 type ParamsType = {
@@ -30,6 +32,15 @@ const usersApi = {
       data
     );
   },
+  updateUser(data: AdminFormType & { id: number }) {
+    return instance.put<GetUserType, { data: AdminFormType & { id: number } }>(
+      Users.update_user,
+      data
+    );
+  },
+  deleteUser(id: number) {
+    return instance.delete(Users.delete_user, { data: { id } });
+  },
   getUserPostsById(userId: number) {
     return instance.get<PostsType>(Users.users + userId + '/posts');
   },
@@ -42,7 +53,7 @@ const useGetUsers = (params: ParamsType) => {
       await usersApi.getUsers(params).then((res) => {
         return res;
       }),
-    enabled: false,
+    enabled: true,
   });
 };
 

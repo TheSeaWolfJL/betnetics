@@ -30,11 +30,12 @@ const authApi = {
 
     return result;
   },
-  // updateMe(data: FormData) {
-  //     return instance.patch(`${base + '/me'}`, data, {
-  //         headers: { 'Content-Type': 'multipart/form-data; boundary=AaB03x' },
-  //     });
-  // },
+  updateMe(data: any) {
+    return instance.put(Auth.me, data);
+  },
+  changePassword(data: { currentPassword: string; newPassword: string }) {
+    return instance.put(`${Auth.me}/password`, data);
+  },
   // logout() {
   //     return null
   // },
