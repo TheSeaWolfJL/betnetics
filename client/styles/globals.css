@@ -6,6 +6,11 @@
     --color-secondary: #cce3fd;
     --text-subtext: #3F3F46;
     --text-label: #52525B;
+    --text-table: #5f5f6a;
+    --text-danger: #f31260;
+    --border-table-header: #d4d4d8;
+    --link-table: #71717a;
+    --header-color: #fafafa;
     --input-border: #E4E4E7;
     --navbar-border: #b8d7fb;
     --color-primary-dark: #11181c;
@@ -14,11 +19,6 @@
 
 .bg-default-100 {
     background-color: #fff;
-}
-
-.text-foreground-500 {
-    color: #52525B;
-    letter-spacing: -1px;
 }
 
 @config "../tailwind.config.js"

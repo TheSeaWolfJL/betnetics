@@ -6,7 +6,7 @@ export default function BaseRootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <div className="flex w-full justify-center sm:items-center items-start bg-bg-main h-screen">
+    <div className="flex w-full justify-center sm:items-center items-start bg-bg-main min-h-screen h-full">
       {children}
     </div>
   );

@@ -30,7 +30,12 @@ export default async function RootLayout({
   return (
     <html suppressHydrationWarning lang="en">
       <head />
-      <body className={clsx('min-h-screen', fontSans.className)}>
+      <body
+        className={clsx(
+          'min-h-screen sm:min-w-[1050px] flex w-full hide-scrollbar',
+          fontSans.className
+        )}
+      >
         <Providers dehydratedState={dehydratedState}>
           <BaseRootLayout>{children}</BaseRootLayout>
         </Providers>

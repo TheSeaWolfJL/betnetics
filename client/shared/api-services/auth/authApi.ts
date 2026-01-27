@@ -23,10 +23,12 @@ const authApi = {
       { refreshToken }
     );
   },
-  me(accessToken: string) {
-    return instance.get<UserProfileType>(Auth.me, {
+  me(accessToken: string, refreshToken: string) {
+    let result = instance.get<UserProfileType>(Auth.me, {
       headers: { Authorization: `Bearer ${accessToken}` },
     });
+
+    return result;
   },
   // updateMe(data: FormData) {
   //     return instance.patch(`${base + '/me'}`, data, {
@@ -38,11 +40,11 @@ const authApi = {
   // },
 };
 
-const useGetAuth = (accessToken: string) => {
+const useGetAuth = (accessToken: string, refreshToken: string) => {
   return useQuery({
     queryKey: ['auth'],
     queryFn: async () =>
-      await authApi.me(accessToken).then((res) => {
+      await authApi.me(accessToken, refreshToken).then((res) => {
         return res.data;
       }),
   });

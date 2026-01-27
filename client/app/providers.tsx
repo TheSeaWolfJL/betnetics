@@ -7,9 +7,9 @@ import {
   QueryClientProvider,
 } from '@tanstack/react-query';
 import * as React from 'react';
-import { HeroUIProvider } from '@heroui/system';
 import { useRouter } from 'next/navigation';
 import { ToastProvider } from '@heroui/react';
+import { HeroUIProvider } from '@heroui/system';
 
 export interface ProvidersProps {
   children: React.ReactNode;
@@ -31,8 +31,8 @@ export function Providers({ children, dehydratedState }: ProvidersProps) {
       new QueryClient({
         defaultOptions: {
           queries: {
-            staleTime: 5 * 1000,
-            refetchInterval: 5 * 1000,
+            staleTime: 30 * 1000,
+            refetchInterval: 30 * 1000,
           },
         },
       })
@@ -41,7 +41,10 @@ export function Providers({ children, dehydratedState }: ProvidersProps) {
   return (
     <QueryClientProvider client={queryClient}>
       <HydrationBoundary state={dehydratedState}>
-        <HeroUIProvider navigate={router.push}>
+        <HeroUIProvider
+          className="flex w-full hide-scrollbar"
+          navigate={router.push}
+        >
           <ToastProvider />
           {children}
         </HeroUIProvider>
