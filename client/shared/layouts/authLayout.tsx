@@ -2,15 +2,19 @@
 
 import { useEffect } from 'react';
 import { Spinner } from '@heroui/react';
-import { useMutation } from '@tanstack/react-query';
-import { usePathname, useRouter } from 'next/navigation';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
+import { pageLimit } from '../constants';
+import { getUrlLimits } from '../utils/urlLimitUtils';
 import { getToken, updateTokens } from '../utils/cookieUtils';
 import { authApi, useGetAuth } from '../api-services/auth/authApi';
 
-import { useAppStore } from '@/store/app-store';
 import { Navbar } from '@/components/navbar';
+import { useAppStore } from '@/store/app-store';
 import { MobileNavbar } from '@/components/mobileNavbar';
+import { AuthLayoutFooter } from '@/components/authLayoutFooter';
+import { PaginationChange } from '@/types';
 
 export default function AuthLayout({
   children,
@@ -19,13 +23,15 @@ export default function AuthLayout({
 }>) {
   const nextRouter = useRouter();
   const pathname = usePathname();
-  const { isAuth, setAuth } = useAppStore();
+  const searchParams = useSearchParams();
   const accessToken = getToken('accessToken');
   const refreshToken = getToken('refreshToken');
-  const { data, isPending } = useGetAuth(accessToken);
+  const { isAuth, setAuth, user, setUser } = useAppStore();
+  const { data, isPending } = useGetAuth(accessToken, refreshToken);
   const mutation = useMutation({
     mutationFn: (refreshToken: string) => authApi.refreshToken(refreshToken),
   });
+  const queryClient = useQueryClient();
   const logoutFn = () => {
     updateTokens('', '');
     nextRouter.push('/');
@@ -35,6 +41,7 @@ export default function AuthLayout({
     if (!isAuth) {
       if (data?.id) {
         setAuth(true);
+        setUser(data);
         updateTokens(data?.accessToken, data?.refreshToken);
 
         return;
@@ -43,6 +50,7 @@ export default function AuthLayout({
         onSuccess: (res) => {
           setAuth(true);
           updateTokens(res.data.accessToken, res.data.refreshToken);
+          queryClient.invalidateQueries({ queryKey: ['auth'] });
 
           return;
         },
@@ -52,21 +60,53 @@ export default function AuthLayout({
         },
       });
     }
-  }, [isAuth, isPending, mutation.isPending, data]);
+  }, [isAuth, isPending, mutation.isPending]);
+
+  const handlePaginationChange = ({ type, value }: PaginationChange) => {
+    const params = new URLSearchParams(searchParams.toString());
+
+    if (type === 'limit') {
+      params.set('limit', value);
+    }
+
+    if (type === 'page') {
+      const limit = Number(getUrlLimits(searchParams).limit);
+
+      params.set('skip', String((value - 1) * limit));
+    }
+
+    nextRouter.replace(`${pathname}?${params.toString()}`);
+  };
+
   if (isPending || mutation.isPending) return <Spinner color="secondary" />;
-  if (!isAuth) nextRouter.push('/');
 
   return (
-    <div className="flex flex-col sm:flex-row w-full sm:h-full sm:pb-10">
+    <div className="flex flex-col w-full sm:flex-row sm:h-full hide-scrollbar">
       <Navbar
-        lastname={data?.firstName ?? 'defaultLastName'}
+        lastname={user?.lastName ?? 'defaultLastName'}
         logout={logoutFn}
-        name={data?.firstName ?? 'defaultName'}
+        name={user?.firstName ?? 'defaultName'}
         pathname={pathname}
-        username={data?.username ?? 'defaultUserName'}
+        username={user?.username ?? 'defaultUserName'}
       />
-      {children}
-      <MobileNavbar pathname={pathname} />
+      <div className="flex flex-col truncate w-full pt-0 gap-5 pb-10">
+        {children}
+        <MobileNavbar pathname={pathname} />
+        {!pathname.split('/').includes('profile') && (
+          <AuthLayoutFooter
+            handlePaginationChange={handlePaginationChange}
+            limit={getUrlLimits(searchParams).limit}
+            page={
+              Number(getUrlLimits(searchParams).skip) /
+                Number(getUrlLimits(searchParams).limit) +
+              1
+            }
+            selectLabel="Показывать на странице"
+            selectOptions={pageLimit}
+            showInRowControls={15}
+          />
+        )}
+      </div>
     </div>
   );
 }
