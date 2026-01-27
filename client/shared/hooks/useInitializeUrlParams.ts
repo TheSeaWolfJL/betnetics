@@ -28,17 +28,22 @@ export const useInitializeUrlParams = (defaultParams: {
         params.set('key', defaultParams.key);
         params.set('value', defaultParams.value);
       }
-      params.set('limit', defaultParams.limit);
+      // Check localStorage for limit
+      const storedLimit = localStorage.getItem('limit');
+      params.set('limit', storedLimit || defaultParams.limit);
       params.set('skip', defaultParams.skip);
       const queryString = params.toString();
 
       nextRouter.replace(`${pathname}?${queryString}`);
     }
-    params.set('limit', getUrlLimits(searchParams).limit);
+    // For limit: if exists in localStorage, use it; else use from searchParams
+    const storedLimit = localStorage.getItem('limit');
+    const currentLimit = storedLimit || getUrlLimits(searchParams).limit;
+    params.set('limit', currentLimit);
     params.set(
       'skip',
       normalizeSkip(
-        getUrlLimits(searchParams).limit,
+        currentLimit,
         getUrlLimits(searchParams).skip
       )
     );

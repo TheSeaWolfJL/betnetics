@@ -1,3 +1,4 @@
 export const socketEvents = {
-    notification: "setNotification",
-}
+  requestNotification: "requestNotification",
+  setNotification: "setNotification",
+};

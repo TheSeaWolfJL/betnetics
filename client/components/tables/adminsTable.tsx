@@ -36,11 +36,7 @@ export function AdminsTable<Data extends object>({
   onAction,
   isLoading = false,
 }: DataTableProps<Data>) {
-  return isLoading ? (
-    <div className="flex w-full h-full items-center justify-center">
-      <Spinner label="Loading..." />
-    </div>
-  ) : (
+  return (
     <Table
       aria-label={label}
       className="p-0 hidden sm:flex"

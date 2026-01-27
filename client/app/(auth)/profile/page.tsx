@@ -3,7 +3,6 @@
 import { useEffect } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { Form, useForm } from 'react-hook-form';
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@heroui/button';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Avatar, Chip, useDisclosure } from '@heroui/react';
@@ -20,6 +19,10 @@ import {
 } from '@/shared/schema/profileUpdateSchema';
 import { SelectSortBy } from '@/components/selectSort';
 import UserModal from '@/components/userModal';
+import { authApi } from '@/shared/api-services/auth/authApi';
+import notifyServerAfterApi from '@/shared/utils/notifyServerAfterApi';
+import getSocket from '@/shared/socket';
+import { addToast } from '@heroui/react';
 
 type ExtendedProfileFormData = ProfileFormData & {
   currentPassword?: string;
@@ -68,14 +71,41 @@ const profileformFields = [
 }>;
 
 export default function ProfilePage() {
-  const { user, setUser } = useAppStore();
-  const nextRouter = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
+  const { user } = useAppStore();
   const mutation = useMutation({
-    // mutationFn: (formData: SignInFormType) => authApi.signInAction(formData),
+    mutationFn: (formData: ExtendedProfileFormData) =>
+      authApi.updateMe(formData),
+  });
+  const passwordMutation = useMutation({
+    mutationFn: (data: { currentPassword: string; newPassword: string }) =>
+      authApi.changePassword(data),
   });
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
+
+  // Listen for server websocket notifications and show toasts
+  useEffect(() => {
+    const socket = getSocket();
+    if (!socket) return;
+
+    const handleNotification = (payload: any) => {
+      const { status, title, message, description } = payload || {};
+      addToast({
+        title: title || (status === 'error' ? 'Error' : 'Notification'),
+        description: message || description || '',
+        color:
+          status === 'success'
+            ? 'success'
+            : status === 'error'
+              ? 'danger'
+              : 'primary',
+      });
+    };
+
+    socket.on('setNotification', handleNotification);
+    return () => {
+      socket.off('setNotification', handleNotification);
+    };
+  }, []);
 
   const {
     clearErrors,
@@ -131,23 +161,47 @@ export default function ProfilePage() {
   // };
 
   const processForm = (payload: ExtendedProfileFormData) => {
-    // mutation.mutate(payload, {
-    //   onSuccess: (res) => {
-    //     addToast({
-    //       title: 'Login',
-    //       description: 'Login was successfully',
-    //       color: 'success',
-    //     });
-    //     nextRouter.push('/posts');
-    //   },
-    //   onError: (error) => {
-    //     addToast({
-    //       title: 'Login error',
-    //       description: `Попробуйте другие логин \ пароль`,
-    //       color: 'danger',
-    //     });
-    //   },
-    // });
+    if (payload.currentPassword && payload.newPassword) {
+      // Password change
+      passwordMutation.mutate(
+        {
+          currentPassword: payload.currentPassword,
+          newPassword: payload.newPassword,
+        },
+        {
+          onSuccess: (res) => {
+            notifyServerAfterApi({
+              type: 'success',
+              message: 'Password changed successfully',
+            });
+            handleOpenChange(); // Close modal
+          },
+          onError: (error) => {
+            notifyServerAfterApi({
+              type: 'error',
+              message: 'Failed to change password',
+            });
+          },
+        }
+      );
+    } else {
+      // Profile update
+      mutation.mutate(payload, {
+        onSuccess: (res) => {
+          notifyServerAfterApi({
+            type: 'success',
+            message: 'Profile updated successfully',
+          });
+          // Optionally refresh user data
+        },
+        onError: (error) => {
+          notifyServerAfterApi({
+            type: 'error',
+            message: 'Failed to update profile',
+          });
+        },
+      });
+    }
   };
 
   const handleOpenChange = () => {
@@ -284,29 +338,29 @@ export default function ProfilePage() {
                     !!isEqualDeep(
                       fullUser
                         ? Object.fromEntries(
-                          Object.keys(getValues()).map((key) => {
-                            if (key === 'birthDate') {
-                              return [key, formatDate(fullUser['birthDate'])];
-                            }
-                            if (key === 'firstName') {
+                            Object.keys(getValues()).map((key) => {
+                              if (key === 'birthDate') {
+                                return [key, formatDate(fullUser['birthDate'])];
+                              }
+                              if (key === 'firstName') {
+                                return [
+                                  key,
+                                  `${fullUser['firstName']} ${fullUser['lastName']}`,
+                                ];
+                              }
+                              if (key === 'currentPassword') {
+                                return [key, ''];
+                              }
+                              if (key === 'newPassword') {
+                                return [key, ''];
+                              }
+
                               return [
                                 key,
-                                `${fullUser['firstName']} ${fullUser['lastName']}`,
+                                fullUser[key as keyof typeof fullUser],
                               ];
-                            }
-                            if (key === 'currentPassword') {
-                              return [key, ''];
-                            }
-                            if (key === 'newPassword') {
-                              return [key, ''];
-                            }
-
-                            return [
-                              key,
-                              fullUser[key as keyof typeof fullUser],
-                            ];
-                          })
-                        )
+                            })
+                          )
                         : null,
                       getValues()
                     )
@@ -325,7 +379,7 @@ export default function ProfilePage() {
         errors={errors}
         fields={adminModalFields}
         fullWidth={true}
-        isLoading={mutation.isPending}
+        isLoading={mutation.isPending || passwordMutation.isPending}
         isOpen={isOpen}
         processForm={processForm}
         register={register}

@@ -15,6 +15,9 @@ import { useAppStore } from '@/store/app-store';
 import { MobileNavbar } from '@/components/mobileNavbar';
 import { AuthLayoutFooter } from '@/components/authLayoutFooter';
 import { PaginationChange } from '@/types';
+import notifyServerAfterApi from '../utils/notifyServerAfterApi';
+import getSocket from '../socket';
+import { addToast } from '@heroui/react';
 
 export default function AuthLayout({
   children,
@@ -33,9 +36,38 @@ export default function AuthLayout({
   });
   const queryClient = useQueryClient();
   const logoutFn = () => {
+    notifyServerAfterApi({
+      type: 'info',
+      message: 'You have been logged out',
+    });
     updateTokens('', '');
     nextRouter.push('/');
   };
+
+  // Listen for server websocket notifications and show toasts
+  useEffect(() => {
+    const socket = getSocket();
+    if (!socket) return;
+
+    const handleNotification = (payload: any) => {
+      const { status, title, message, description } = payload || {};
+      addToast({
+        title: title || (status === 'error' ? 'Error' : 'Notification'),
+        description: message || description || '',
+        color:
+          status === 'success'
+            ? 'success'
+            : status === 'error'
+              ? 'danger'
+              : 'primary',
+      });
+    };
+
+    socket.on('setNotification', handleNotification);
+    return () => {
+      socket.off('setNotification', handleNotification);
+    };
+  }, []);
 
   useEffect(() => {
     if (!isAuth) {
